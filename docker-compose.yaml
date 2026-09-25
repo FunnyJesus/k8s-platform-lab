@@ -5,7 +5,7 @@ services:
     networks:
       - k8s-platform-lab
     ports:
-      - "8001:8000"
+      - "8000:8000"
   prometheus:
     image: prom/prometheus:v3.14.0
     networks:
@@ -13,7 +13,7 @@ services:
     ports:
       - "9090:9090"
     volumes:
-      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
   grafana:
     image: grafana/grafana:13.2.2
     networks:
