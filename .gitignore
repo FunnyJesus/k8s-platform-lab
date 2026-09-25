@@ -1,0 +1,9 @@
+.idea/
+__pycache__
+.terraform/
+*.tfstate
+.venv
+.vscode/
+
+# локальный рабочий план, не для репозитория
+IMPLEMENTATION.md

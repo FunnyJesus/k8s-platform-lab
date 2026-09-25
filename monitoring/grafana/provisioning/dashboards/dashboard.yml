@@ -1,0 +1,13 @@
+apiVersion: 1
+
+providers:
+  - name: 'Default Provider'
+    orgId: 1
+    folder: '' # Название папки в Grafana (оставьте пустым для корневой директории)
+    type: 'file'
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    allowUiUpdates: true
+    options:
+      # Путь к папке, где лежат файлы ваших дашбордов (JSON или YAML)
+      path: '/var/lib/grafana/dashboards'

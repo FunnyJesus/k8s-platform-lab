@@ -1,0 +1,15 @@
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    uid: prometheus          # dashboard panels reference this uid — keep it stable
+    access: proxy            # Grafana's backend queries Prometheus, not the browser:
+                             # works regardless of what the viewer's machine can reach
+    url: http://prometheus:9090
+    isDefault: true
+    editable: false          # provisioned from git; the UI must not fork it
+    jsonData:
+      httpMethod: POST       # long PromQL queries do not fit in a URL
+      timeInterval: 15s      # must match scrape_interval in prometheus.yml,
+                             # otherwise rate() over short windows returns gaps
