@@ -5,5 +5,8 @@ __pycache__
 .venv
 .vscode/
 
+kc-platfom-lab.yaml
+kind
+
 # локальный рабочий план, не для репозитория
 IMPLEMENTATION.md
