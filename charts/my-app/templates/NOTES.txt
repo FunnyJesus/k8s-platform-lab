@@ -1,0 +1,66 @@
+{{- $fullname := include "my-app.fullname" . -}}
+{{- $ns := .Release.Namespace -}}
+{{ .Chart.Name }} {{ .Chart.AppVersion }} установлен как релиз "{{ .Release.Name }}" в namespace "{{ $ns }}" (ревизия {{ .Release.Revision }}).
+
+1. Дождитесь готовности:
+
+   kubectl -n {{ $ns }} rollout status deploy/{{ $fullname }}
+
+2. Откройте приложение:
+{{- if .Values.ingress.enabled }}
+{{- range .Values.ingress.hosts }}
+{{- $host := default "localhost" .host }}
+{{- range .paths }}
+
+   http{{ if $.Values.ingress.tls }}s{{ end }}://{{ $host }}{{ .path }}
+{{- end }}
+{{- end }}
+{{- else if eq .Values.service.type "NodePort" }}
+
+   export NODE_PORT=$(kubectl -n {{ $ns }} get svc {{ $fullname }} -o jsonpath='{.spec.ports[0].nodePort}')
+   export NODE_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[0].address}')
+   echo "http://$NODE_IP:$NODE_PORT"
+{{- else if eq .Values.service.type "LoadBalancer" }}
+
+   kubectl -n {{ $ns }} get svc {{ $fullname }} -w
+   # когда появится EXTERNAL-IP:  http://<EXTERNAL-IP>:{{ .Values.service.port }}
+{{- else }}
+
+   kubectl -n {{ $ns }} port-forward svc/{{ $fullname }} 8080:{{ .Values.service.port }}
+   # затем откройте http://localhost:8080
+{{- end }}
+
+3. Эндпоинты:
+
+   GET /                  версия приложения и имя инстанса
+   GET /healthz           liveness: 200, пока жив процесс
+   GET /readyz            readiness: 503 первые {{ .Values.config.READY_DELAY_SECONDS }}с после старта
+   GET /metrics           метрики для Prometheus
+   GET /api/work?ms=N     жжёт N мс CPU — чем нагружать HPA и p95
+
+4. Что включено в этом релизе:
+
+   образ        {{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}
+{{- if .Values.autoscaling.enabled }}
+   HPA          {{ .Values.autoscaling.minReplicas }}-{{ .Values.autoscaling.maxReplicas }} реплик, цель CPU {{ .Values.autoscaling.targetCPUUtilizationPercentage }}% от requests
+{{- else }}
+   реплики      {{ .Values.replicaCount }} (HPA выключен)
+{{- end }}
+{{- if .Values.pdb.enabled }}
+   PDB          minAvailable: {{ .Values.pdb.minAvailable }}
+{{- end }}
+{{- if not .Values.ingress.enabled }}
+   ingress      выключен
+{{- end }}
+
+5. Проверка:
+
+   kubectl -n {{ $ns }} get pods -l app.kubernetes.io/instance={{ .Release.Name }}
+   helm test {{ .Release.Name }} -n {{ $ns }} --logs
+{{- if .Values.autoscaling.enabled }}
+
+ВНИМАНИЕ: HPA требует metrics-server, в kind его нет по умолчанию.
+Проверьте:  kubectl top pods -n {{ $ns }}
+Если видите "Metrics API not available" — HPA не масштабирует, в описании HPA
+вместо процентов будет <unknown>.
+{{- end }}

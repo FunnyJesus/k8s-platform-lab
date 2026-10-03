@@ -1,0 +1,12 @@
+{{- $defaults := dict "APP_VERSION" (.Values.image.tag | default .Chart.AppVersion) -}}
+{{- $config := merge (dict) .Values.config $defaults -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "my-app.fullname" . }}-config
+  labels:
+    {{- include "my-app.labels" . | nindent 4 }}
+data:
+  {{- range $key, $value := $config }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}

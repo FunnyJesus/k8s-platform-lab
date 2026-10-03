@@ -7,6 +7,7 @@ __pycache__
 
 kc-platfom-lab.yaml
 kind
+kind/
 
 # локальный рабочий план, не для репозитория
 IMPLEMENTATION.md
