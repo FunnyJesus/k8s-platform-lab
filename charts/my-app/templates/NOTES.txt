@@ -50,7 +50,7 @@
    PDB          minAvailable: {{ .Values.pdb.minAvailable }}
 {{- end }}
 {{- if not .Values.ingress.enabled }}
-   ingress      выключен
+   ingress      включен
 {{- end }}
 
 5. Проверка:
