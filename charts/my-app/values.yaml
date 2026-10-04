@@ -91,13 +91,14 @@ pdb:
 autoscaling:
   enabled: true
   minReplicas: 2
-  maxReplicas: 6
+  maxReplicas: 4
   targetCPUUtilizationPercentage: 70
   # targetMemoryUtilizationPercentage: 80
 
 topologySpreadConstraints:
   - maxSkew: 2
     topologyKey: kubernetes.io/hostname
+    nodeTaintsPolicy: Honor
     whenUnsatisfiable: DoNotSchedule
 
 config:
