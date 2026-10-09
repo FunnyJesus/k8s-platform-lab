@@ -15,25 +15,25 @@ concurrency:
 
 jobs:
   lint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: azure/setup-helm@v4
         with:
           version: v4.3.0
       - run: make lint
   e2e:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: lint
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: azure/setup-helm@v4
         with:
           version: v4.3.0
       - uses: helm/kind-action@v1
         with: 
           install_only: true
-      - run: make cluster CLUSTER_CONFIG=configs/cluster.yaml
+      - run: make cluster CLUSTER_CONFIG=configs/cluster-ci.yaml
       - run: make ingress
       - run: make metrics
       - run: make deploy
