@@ -33,7 +33,7 @@ jobs:
       - uses: helm/kind-action@v1
         with: 
           install_only: true
-      - run: make cluster CLUSTER_CONFIG=configs/cluster-ci.yaml
+      - run: make cluster CLUSTER_CONFIG=configs/cluster.yaml
       - run: make ingress
       - run: make metrics
       - run: make deploy
