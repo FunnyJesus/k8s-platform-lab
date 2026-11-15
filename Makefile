@@ -12,7 +12,7 @@ KPS_RELEASE ?= kps
 KPS_NS      ?= monitoring
 KPS_VERSION ?= 92.16.1
 KPS_VALUES  ?= monitoring/kube-prometheus-stack/values.yaml
-PROM_OPERATOR_VERSION ?= v0.94.2   # должна совпадать с appVersion чарта kps
+PROM_OPERATOR_VERSION ?= v0.94.2
 SERVICE_MONITOR ?= true
 
 .DEFAULT_GOAL := help
@@ -33,8 +33,8 @@ build: cluster ## собрать образ
 	kind load docker-image $(IMAGE):$(TAG) --name $(CLUSTER_NAME)
 
 crds: ## CRD оператора без установки всего стека (для CI)
-      kubectl apply --server-side -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/$(PROM_OPERATOR_VERSION)/example/prometheus-operator-crd/monitoring.coreos.com_servicemonitors.yaml
-      kubectl apply --server-side -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/$(PROM_OPERATOR_VERSION)/example/prometheus-operator-crd/monitoring.coreos.com_prometheusrules.yam
+	kubectl apply --server-side -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/$(PROM_OPERATOR_VERSION)/example/prometheus-operator-crd/monitoring.coreos.com_servicemonitors.yaml
+	kubectl apply --server-side -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/$(PROM_OPERATOR_VERSION)/example/prometheus-operator-crd/monitoring.coreos.com_prometheusrules.yaml
 
 deploy: build ## поставить/обновить чарт
 	helm upgrade --install $(APP_NAME) $(CHART) \
