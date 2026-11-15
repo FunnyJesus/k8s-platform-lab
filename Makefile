@@ -12,9 +12,11 @@ KPS_RELEASE ?= kps
 KPS_NS      ?= monitoring
 KPS_VERSION ?= 92.16.1
 KPS_VALUES  ?= monitoring/kube-prometheus-stack/values.yaml
+PROM_OPERATOR_VERSION ?= v0.94.2   # должна совпадать с appVersion чарта kps
+SERVICE_MONITOR ?= true
 
 .DEFAULT_GOAL := help
-.PHONY: help cluster kubeconfig ingress metrics build deploy up test load down lint monitoring
+.PHONY: help cluster kubeconfig ingress metrics build deploy up test load down lint monitoring crds
 
 help: ## показать доступные цели
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
@@ -29,6 +31,10 @@ cluster: ## создать кластер kind и загрузить образ
 build: cluster ## собрать образ
 	docker build -t $(IMAGE):$(TAG) .
 	kind load docker-image $(IMAGE):$(TAG) --name $(CLUSTER_NAME)
+
+crds: ## CRD оператора без установки всего стека (для CI)
+      kubectl apply --server-side -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/$(PROM_OPERATOR_VERSION)/example/prometheus-operator-crd/monitoring.coreos.com_servicemonitors.yaml
+      kubectl apply --server-side -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/$(PROM_OPERATOR_VERSION)/example/prometheus-operator-crd/monitoring.coreos.com_prometheusrules.yam
 
 deploy: build ## поставить/обновить чарт
 	helm upgrade --install $(APP_NAME) $(CHART) \

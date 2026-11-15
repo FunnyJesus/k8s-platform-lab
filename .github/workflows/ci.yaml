@@ -36,6 +36,9 @@ jobs:
       - run: make cluster CLUSTER_CONFIG=configs/cluster-ci.yaml
       - run: make ingress
       - run: make metrics
+      - run: make crds
       - run: make deploy
       - run: make test
       - run: curl -fsS http://localhost/ | grep -q '"version"'
+      - run: kubectl get servicemonitor -n my-app my-app
+      - run: kubectl apply --dry-run=server -f monitoring/k8s/alert-rules.yaml
