@@ -1,0 +1,53 @@
+prometheus:
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    paths: ["/prometheus"]        # ← paths, список! у Grafana был path, строка
+  prometheusSpec:
+    routePrefix: /prometheus
+    externalUrl: http://localhost/prometheus
+    serviceMonitorSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false
+    retention: 2d
+    resources:
+      requests:
+        memory: 512Mi
+        cpu: 100m
+
+kubeControllerManager:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeEtcd:
+  enabled: false
+kubeProxy:
+  enabled: false
+
+defaultRules:
+  rules:
+    etcd: false
+    kubeControllerManager: false
+    kubeSchedulerAlerting: false
+    kubeProxy: false
+  disabled:
+    NodeClockNotSynchronising: true
+    NodeClockSkewDetected: true
+
+grafana:
+  adminUser: admin
+  adminPassword: admin
+  defaultDashboardsTimezone: "browser"
+  serviceMonitor:
+    path: /grafana/metrics
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    path: /grafana
+    pathType: Prefix
+    hosts: []                     # пусто = правило без host, ловит localhost
+  grafana.ini:
+    server:
+      domain: localhost
+      root_url: "http://localhost/grafana"
+      serve_from_sub_path: true
+    

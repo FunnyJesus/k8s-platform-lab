@@ -22,6 +22,6 @@ services:
       - "3000:3000"
     volumes:
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
-      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - ./charts/my-app/dashboards:/var/lib/grafana/dashboards:ro
 networks:
   k8s-platform-lab: {}

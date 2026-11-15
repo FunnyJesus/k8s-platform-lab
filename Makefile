@@ -8,9 +8,13 @@ RELEASE ?= $(APP_NAME)
 TAG ?= dev
 CHART ?= charts/$(APP_NAME)
 BASE_URL ?= http://localhost
+KPS_RELEASE ?= kps
+KPS_NS      ?= monitoring
+KPS_VERSION ?= 92.16.1
+KPS_VALUES  ?= monitoring/kube-prometheus-stack/values.yaml
 
 .DEFAULT_GOAL := help
-.PHONY: help cluster kubeconfig ingress metrics build deploy up test load down lint
+.PHONY: help cluster kubeconfig ingress metrics build deploy up test load down lint monitoring
 
 help: ## показать доступные цели
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
@@ -30,13 +34,16 @@ deploy: build ## поставить/обновить чарт
 	helm upgrade --install $(APP_NAME) $(CHART) \
 		--namespace $(NS) --create-namespace \
 		--set image.repository=$(IMAGE) \
-		--set image.tag=$(TAG) --wait --timeout 5m
+		--set image.tag=$(TAG) --wait --timeout 5m \
+		--set serviceMonitor.enabled=true
 
 kubeconfig:  ## освежить ~/.kube/config после перезапуска Docker
 	kind export kubeconfig --name $(CLUSTER_NAME)
 
-up: cluster ingress metrics deploy  ## всё с нуля до рабочей ссылки
-	@echo "ready: $(BASE_URL)/"
+up: cluster ingress metrics monitoring deploy  ## всё с нуля до рабочей ссылки
+	@echo "приложение: $(BASE_URL)/"
+	@echo "Grafana:    $(BASE_URL)/grafana   (admin/admin)"
+	@echo "Prometheus: $(BASE_URL)/prometheus/targets"
 
 down: ## удалить кластер и приложение
 	kind delete cluster --name $(CLUSTER_NAME)
@@ -66,3 +73,15 @@ test: ## запустить тесты
 
 load: ## нагрузка для HPA и графиков
 	BASE_URL=$(BASE_URL) ./scripts/generate-load.sh
+
+monitoring: ## kube-prometheus-stack + ServiceMonitor + правила алертов
+	helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+	helm repo update prometheus-community
+	helm upgrade --install $(KPS_RELEASE) prometheus-community/kube-prometheus-stack \
+			--namespace $(KPS_NS) --create-namespace \
+			--version $(KPS_VERSION) \
+			-f $(KPS_VALUES) \
+			--wait --timeout 10m
+	kubectl apply -f monitoring/k8s/alert-rules.yaml
+	@echo "Grafana:    $(BASE_URL)/grafana   (admin/admin)"
+	@echo "Prometheus: $(BASE_URL)/prometheus/targets"
